@@ -23,11 +23,15 @@ import {
   ],
   providers: [provideIcons({ heroChevronDown })],
   template: `
-    <div [(ngpComboboxValue)]="value" (ngpComboboxValueChange)="onValueChange($event)" ngpCombobox>
+    <div
+      [(ngpComboboxValue)]="value"
+      (ngpComboboxValueChange)="filter.set($event)"
+      (ngpComboboxOpenChange)="resetOnClose($event)"
+      ngpCombobox
+    >
       <input
         [value]="filter()"
         (input)="onFilterChange($event)"
-        (blur)="resetOnBlur()"
         placeholder="Select an option"
         ngpComboboxInput
       />
@@ -59,6 +63,11 @@ import {
       background-color: var(--ngp-background);
       box-shadow: var(--ngp-input-shadow);
       box-sizing: border-box;
+    }
+
+    [ngpCombobox][data-focus] {
+      outline: 2px solid var(--ngp-focus-ring);
+      outline-offset: 2px;
     }
 
     [ngpComboboxInput] {
@@ -96,10 +105,12 @@ import {
       position: absolute;
       animation: popover-show 0.1s ease-out;
       width: var(--ngp-combobox-width);
+      box-shadow: var(--ngp-shadow-lg);
       box-sizing: border-box;
       margin-top: 4px;
       max-height: 240px;
       overflow-y: auto;
+      z-index: 1001;
     }
 
     [ngpComboboxDropdown][data-enter] {
@@ -150,22 +161,22 @@ import {
     @keyframes combobox-show {
       0% {
         opacity: 0;
-        transform: scale(0.9);
+        transform: translateY(-10px) scale(0.9);
       }
       100% {
         opacity: 1;
-        transform: scale(1);
+        transform: translateY(0) scale(1);
       }
     }
 
     @keyframes combobox-hide {
       0% {
         opacity: 1;
-        transform: scale(1);
+        transform: translateY(0) scale(1);
       }
       100% {
         opacity: 0;
-        transform: scale(0.9);
+        transform: translateY(-10px) scale(0.9);
       }
     }
   `,
@@ -195,29 +206,21 @@ export default class ComboboxExample {
   readonly filter = signal<string>('');
 
   /** Get the filtered options. */
-  protected readonly filteredOptions = computed(() => {
-    const filter = this.filter();
+  protected readonly filteredOptions = computed(() =>
+    this.options.filter(option => option.toLowerCase().includes(this.filter().toLowerCase())),
+  );
 
-    // if the filter perfectly matches an option, return all options
-    if (this.options.some(option => option === filter)) {
-      return this.options;
-    }
-
-    // otherwise case insensitive filter
-    return this.options.filter(option => option.toLowerCase().includes(filter.toLowerCase()));
-  });
-
-  onFilterChange(event: Event): void {
+  protected onFilterChange(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.filter.set(input.value);
   }
 
-  protected onValueChange(value: string): void {
-    // update the filter value
-    this.filter.set(value);
-  }
+  protected resetOnClose(open: boolean): void {
+    // if the dropdown is closed, reset the filter value
+    if (open) {
+      return;
+    }
 
-  protected resetOnBlur(): void {
     // if the filter value is empty, set the value to undefined
     if (this.filter() === '') {
       this.value.set(undefined);

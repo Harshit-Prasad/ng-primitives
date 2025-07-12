@@ -1,3 +1,223 @@
+## 0.62.1 (2025-07-11)
+
+### 🩹 Fixes
+
+- **accordion:** provide default values ([#354](https://github.com/ng-primitives/ng-primitives/pull/354))
+- **tooltip:** resolve accessibility issues ([#355](https://github.com/ng-primitives/ng-primitives/pull/355))
+
+### ❤️ Thank You
+
+- Ashley Hunter
+
+## 0.62.0 (2025-07-11)
+
+### 🩹 Fixes
+
+- **accordion:** provide default values ([#354](https://github.com/ng-primitives/ng-primitives/pull/354))
+- **tooltip:** resolve accessibility issues ([#355](https://github.com/ng-primitives/ng-primitives/pull/355))
+
+### ❤️ Thank You
+
+- Ashley Hunter
+
+## 0.61.0 (2025-07-10)
+
+- **refactor(toast)**: reworking toast component 
+
+> **Note**: This version contains a breaking change. The `NgpToast` component has been refactored to improve its API and functionality. If you were using the previous version, please refer to the updated documentation on how to use the new `NgpToast` component.
+
+## 0.60.0 (2025-07-09)
+
+- **feat(popover)**: add opened and closed event outputs to NgpPopoverTrigger by @eurusik in #343
+- **fix(combobox)**: update z-index of dropdown to fix menu item visibility in dialog by @kostetskyroma in #348
+- **fix(combobox)**: scroll issue by @ashley-hunter in #350
+
+## 0.59.0 (2025-07-08)
+
+### 🚀 Features
+
+- **button:** add button variants to reusable components ([#339](https://github.com/ng-primitives/ng-primitives/pull/339))
+- **tooltip:** add data placement attribute support ([#340](https://github.com/ng-primitives/ng-primitives/pull/340))
+- **tooltip:** add showOnOverflow input to tooltip trigger ([#342](https://github.com/ng-primitives/ng-primitives/pull/342))
+
+### ❤️ Thank You
+
+- Eugene Rusakov @eurusik
+- Ido Golan @ido-g-coralogix
+
+## 0.58.0 (2025-07-04)
+
+### 🚀 Features
+
+- **button:** add size to reusable component ([#334](https://github.com/ng-primitives/ng-primitives/pull/334))
+
+### 🩹 Fixes
+
+- **pagination:** allow ngpButton for pagination buttons ([#336](https://github.com/ng-primitives/ng-primitives/pull/336))
+
+### ❤️ Thank You
+
+- Ashley Hunter
+- Eugene Rusakov @eurusik
+
+## 0.57.0 (2025-07-03)
+
+### 🚀 Features
+
+- add date picker tailwind example ([#324](https://github.com/ng-primitives/ng-primitives/pull/324))
+- add dialog tailwind example ([#325](https://github.com/ng-primitives/ng-primitives/pull/325))
+- add file-upload tailwind example ([#328](https://github.com/ng-primitives/ng-primitives/pull/328))
+- adding arrow support for tooltip and popover ([#329](https://github.com/ng-primitives/ng-primitives/pull/329))
+- adding support for context7 ([#330](https://github.com/ng-primitives/ng-primitives/pull/330))
+- **combobox:** combobox adding status attributes ([#331](https://github.com/ng-primitives/ng-primitives/pull/331))
+
+### 🩹 Fixes
+
+- **tab:** disabled button ([#333](https://github.com/ng-primitives/ng-primitives/pull/333))
+
+### ❤️ Thank You
+
+- Ashley Hunter
+- kedevked @kedevked
+
+## 0.56.0 (2025-07-01)
+
+### 🚀 Features
+
+- return dialog close value ([#305](https://github.com/ng-primitives/ng-primitives/pull/305))
+- add tailwind example for button ([#306](https://github.com/ng-primitives/ng-primitives/pull/306))
+- add avatar tailwind example ([#311](https://github.com/ng-primitives/ng-primitives/pull/311))
+- add accordion tailwind example ([#312](https://github.com/ng-primitives/ng-primitives/pull/312))
+- add combobox tailwind example ([#320](https://github.com/ng-primitives/ng-primitives/pull/320))
+- add checkbox tailwind example ([#319](https://github.com/ng-primitives/ng-primitives/pull/319))
+
+### 🩹 Fixes
+
+- **combobox:** handle undefined option selection in combobox ([#313](https://github.com/ng-primitives/ng-primitives/pull/313))
+- **combobox:** set up form control for combobox-input ([#316](https://github.com/ng-primitives/ng-primitives/pull/316))
+- **menu:** fix menu disabled state ([#323](https://github.com/ng-primitives/ng-primitives/pull/323))
+
+### ❤️ Thank You
+
+- Adrian Kopytko @adriankopytko
+- Ashley Hunter
+- kedevked @kedevked
+
+## 0.55.0 (2025-06-23)
+
+### 🩹 Fixes
+
+- ensure popover is destroyed when trigger is destroyed ([#304](https://github.com/ng-primitives/ng-primitives/pull/304))
+
+### ❤️ Thank You
+
+- Ashley Hunter
+
+## 0.54.0 (2025-06-21)
+
+### 🩹 Fixes
+
+* fix(combobox): resolve view destroy issue by @ashley-hunter in https://github.com/ng-primitives/ng-primitives/pull/299
+* fix(overlay)!: context injection is now a signal by @ashley-hunter in https://github.com/ng-primitives/ng-primitives/pull/301
+* fix(input): fix form disabled issue by @ashley-hunter in https://github.com/ng-primitives/ng-primitives/pull/302
+
+> **Note:** This version contains a minor breaking change. The injectOverlayContext, injectTooltipContext and injectPopoverContext functions now return a signal instead of a value to allow for dynamic values.
+
+### ❤️ Thank You
+
+- Ashley Hunter
+
+## 0.53.0 (2025-06-20)
+
+### 🩹 Fixes
+
+- sync state and data-attributes in form-field and form-control - control status ([#298](https://github.com/ng-primitives/ng-primitives/pull/298))
+
+### ❤️ Thank You
+
+- Adrian Kopytko @adriankopytko
+
+## 0.52.0 (2025-06-16)
+
+### 🩹 Fixes
+
+- **combobox:** prevent unexpected scroll ([#296](https://github.com/ng-primitives/ng-primitives/pull/296))
+
+### ❤️ Thank You
+
+- Ashley Hunter
+
+## 0.50.0 (2025-06-06)
+
+### 🚀 Features
+
+- controlled inputs ([#286](https://github.com/ng-primitives/ng-primitives/pull/286))
+- **toggle-group:** adding option to allow deselection ([#280](https://github.com/ng-primitives/ng-primitives/pull/280))
+
+### ❤️ Thank You
+
+- Ashley Hunter
+
+## 0.49.0 (2025-06-03)
+
+### 🩹 Fixes
+
+- resolving id sync issues ([#278](https://github.com/ng-primitives/ng-primitives/pull/278))
+
+### ❤️ Thank You
+
+- Ashley Hunter
+
+## 0.48.0 (2025-05-31)
+
+### 🚀 Features
+
+- add support for csp nonce to style injector ([#275](https://github.com/ng-primitives/ng-primitives/pull/275))
+- **menu:** reusable component ([#246](https://github.com/ng-primitives/ng-primitives/pull/246), [#149](https://github.com/ng-primitives/ng-primitives/issues/149), [#207](https://github.com/ng-primitives/ng-primitives/issues/207), [#209](https://github.com/ng-primitives/ng-primitives/issues/209), [#204](https://github.com/ng-primitives/ng-primitives/issues/204), [#211](https://github.com/ng-primitives/ng-primitives/issues/211), [#212](https://github.com/ng-primitives/ng-primitives/issues/212), [#214](https://github.com/ng-primitives/ng-primitives/issues/214), [#215](https://github.com/ng-primitives/ng-primitives/issues/215), [#218](https://github.com/ng-primitives/ng-primitives/issues/218), [#219](https://github.com/ng-primitives/ng-primitives/issues/219), [#220](https://github.com/ng-primitives/ng-primitives/issues/220), [#221](https://github.com/ng-primitives/ng-primitives/issues/221), [#222](https://github.com/ng-primitives/ng-primitives/issues/222), [#228](https://github.com/ng-primitives/ng-primitives/issues/228), [#226](https://github.com/ng-primitives/ng-primitives/issues/226), [#237](https://github.com/ng-primitives/ng-primitives/issues/237), [#238](https://github.com/ng-primitives/ng-primitives/issues/238), [#240](https://github.com/ng-primitives/ng-primitives/issues/240), [#243](https://github.com/ng-primitives/ng-primitives/issues/243), [#242](https://github.com/ng-primitives/ng-primitives/issues/242), [#244](https://github.com/ng-primitives/ng-primitives/issues/244), [#152](https://github.com/ng-primitives/ng-primitives/issues/152))
+
+### 🩹 Fixes
+
+- **combobox:** Select input after dropdown opened ([#268](https://github.com/ng-primitives/ng-primitives/pull/268))
+- **combobox:** resolve dropdown close issue ([#273](https://github.com/ng-primitives/ng-primitives/pull/273))
+- **input:** correct disabled attribute ([#274](https://github.com/ng-primitives/ng-primitives/pull/274))
+- **menu:** resolve scroll blocking not working ([#270](https://github.com/ng-primitives/ng-primitives/pull/270))
+- **switch:** resolve form control timing issue ([#269](https://github.com/ng-primitives/ng-primitives/pull/269))
+
+### ❤️ Thank You
+
+- Ashley Hunter
+- Ruud Walraven
+
+## 0.47.0 (2025-05-29)
+
+### 🩹 Fixes
+
+- **menu:** resolve flicker issue on mobile ([#265](https://github.com/ng-primitives/ng-primitives/pull/265))
+
+### ❤️ Thank You
+
+- Ashley Hunter
+
+## 0.46.0 (2025-05-28)
+
+### 🚀 Features
+
+- **form-control:** add support for standalone form control ([#263](https://github.com/ng-primitives/ng-primitives/pull/263))
+
+### ❤️ Thank You
+
+- Ashley Hunter
+
+## 0.45.1 (2025-05-27)
+
+### 🩹 Fixes
+
+- **menu:** ssr issue ([#261](https://github.com/ng-primitives/ng-primitives/pull/261))
+
+### ❤️ Thank You
+
+- Ashley Hunter
+
 ## 0.45.0 (2025-05-26)
 
 - all overlay primitives have now been unified to use the same API internally, greatly simplifying the codebase and making it easier to maintain. This includes the `NgpPopover`, `NgpTooltip`, `NgpMenu`, and `NgpCombobox` primitives.

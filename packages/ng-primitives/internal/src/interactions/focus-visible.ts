@@ -1,7 +1,6 @@
 import { FocusMonitor, FocusOrigin } from '@angular/cdk/a11y';
 import { ElementRef, inject, Renderer2, Signal, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { onBooleanChange } from 'ng-primitives/utils';
+import { onBooleanChange, safeTakeUntilDestroyed } from 'ng-primitives/utils';
 
 export interface NgpFocusVisibleOptions {
   disabled?: Signal<boolean>;
@@ -16,30 +15,17 @@ export function setupFocusVisible({
   focusChange,
   disabled = signal(false),
 }: NgpFocusVisibleOptions): NgpFocusVisibleState {
-  /**
-   * Access the element that the directive is applied to.
-   */
   const elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
-
-  /**
-   * Access the renderer.
-   */
   const renderer = inject(Renderer2);
-
-  /**
-   * Access the focus monitor.
-   */
   const focusMonitor = inject(FocusMonitor);
 
-  /**
-   * Whether the element is currently focused.
-   */
+  // Whether the element is currently focused.
   const isFocused = signal<boolean>(false);
 
   // handle focus state
   focusMonitor
     .monitor(elementRef.nativeElement)
-    .pipe(takeUntilDestroyed())
+    .pipe(safeTakeUntilDestroyed())
     .subscribe(origin =>
       // null indicates the element was blurred
       origin === null ? onBlur() : onFocus(origin),

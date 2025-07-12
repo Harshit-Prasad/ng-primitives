@@ -1,7 +1,8 @@
 import { BooleanInput } from '@angular/cdk/coercion';
 import { booleanAttribute, Directive, HostListener, input, output } from '@angular/core';
-import { NgpFormControl } from 'ng-primitives/form-field';
+import { setupFormControl } from 'ng-primitives/form-field';
 import { injectElementRef, setupInteractions } from 'ng-primitives/internal';
+import { uniqueId } from 'ng-primitives/utils';
 import { provideSwitchState, switchState } from './switch-state';
 
 /**
@@ -11,9 +12,9 @@ import { provideSwitchState, switchState } from './switch-state';
   selector: '[ngpSwitch]',
   exportAs: 'ngpSwitch',
   providers: [provideSwitchState()],
-  hostDirectives: [NgpFormControl],
   host: {
     role: 'switch',
+    '[id]': 'id()',
     '[attr.type]': 'isButton ? "button" : null',
     '[attr.aria-checked]': 'state.checked()',
     '[attr.data-checked]': 'state.checked() ? "" : null',
@@ -33,6 +34,11 @@ export class NgpSwitch {
    * Determine if the switch is a button
    */
   protected isButton = this.elementRef.nativeElement.tagName === 'BUTTON';
+
+  /**
+   * The id of the switch. If not provided, a unique id will be generated.
+   */
+  readonly id = input<string>(uniqueId('ngp-switch'));
 
   /**
    * Determine if the switch is checked.
@@ -72,6 +78,7 @@ export class NgpSwitch {
       focusVisible: true,
       disabled: this.state.disabled,
     });
+    setupFormControl({ id: this.state.id, disabled: this.state.disabled });
   }
 
   /**
@@ -83,15 +90,19 @@ export class NgpSwitch {
       return;
     }
 
-    this.state.checked.set(!this.state.checked());
-    this.checkedChange.emit(this.state.checked());
+    const checked = !this.state.checked();
+    this.state.checked.set(checked);
+    this.checkedChange.emit(checked);
   }
 
   /**
    * Handle the keydown event.
    */
-  @HostListener('keydown.space')
-  protected onKeyDown(): void {
+  @HostListener('keydown.space', ['$event'])
+  protected onKeyDown(event: KeyboardEvent): void {
+    // Prevent the default action of the space key, which is to scroll the page.
+    event.preventDefault();
+
     // If the switch is not a button then the space key will not toggle the checked state automatically,
     // so we need to do it manually.
     if (!this.isButton) {

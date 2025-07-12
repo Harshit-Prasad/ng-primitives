@@ -1,5 +1,5 @@
-import { Directive } from '@angular/core';
-import { NgpExitAnimation } from 'ng-primitives/internal';
+import { Directive, input } from '@angular/core';
+import { explicitEffect, setupHover } from 'ng-primitives/internal';
 import { injectOverlay } from 'ng-primitives/portal';
 
 /**
@@ -8,13 +8,14 @@ import { injectOverlay } from 'ng-primitives/portal';
 @Directive({
   selector: '[ngpTooltip]',
   exportAs: 'ngpTooltip',
-  hostDirectives: [NgpExitAnimation],
   host: {
     role: 'tooltip',
+    '[id]': 'id()',
     '[style.left.px]': 'overlay.position().x',
     '[style.top.px]': 'overlay.position().y',
     '[style.--ngp-tooltip-trigger-width.px]': 'overlay.triggerWidth()',
     '[style.--ngp-tooltip-transform-origin]': 'overlay.transformOrigin()',
+    '[attr.data-placement]': 'overlay.finalPlacement()',
   },
 })
 export class NgpTooltip {
@@ -22,4 +23,19 @@ export class NgpTooltip {
    * Access the overlay.
    */
   protected readonly overlay = injectOverlay();
+
+  /**
+   * The unique id of the tooltip.
+   */
+  readonly id = input(this.overlay.id());
+
+  constructor() {
+    explicitEffect([this.id], ([id]) => this.overlay.id.set(id));
+
+    // if the mouse moves over the tooltip, we want to keep it open
+    setupHover({
+      hoverStart: () => this.overlay.cancelPendingClose(),
+      hoverEnd: () => this.overlay.hide(),
+    });
+  }
 }

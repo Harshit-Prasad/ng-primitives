@@ -61,6 +61,11 @@ We welcome contributions from the community. Please refer to our [contributing g
       <td align="center" valign="top" width="14.28%"><a href="https://paddlingspots.com/"><img src="https://avatars.githubusercontent.com/u/8985933?v=4?s=100" width="100px;" alt="Marc Stammerjohann"/><br /><sub><b>Marc Stammerjohann</b></sub></a><br /><a href="https://github.com/ng-primitives/ng-primitives/commits?author=marcjulian" title="Code">💻</a> <a href="#ideas-marcjulian" title="Ideas, Planning, & Feedback">🤔</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Harshit-Prasad"><img src="https://avatars.githubusercontent.com/u/130169629?v=4?s=100" width="100px;" alt="Harshit-Prasad"/><br /><sub><b>Harshit-Prasad</b></sub></a><br /><a href="https://github.com/ng-primitives/ng-primitives/commits?author=Harshit-Prasad" title="Code">💻</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://eurusik.medium.com"><img src="https://avatars.githubusercontent.com/u/789033?v=4?s=100" width="100px;" alt="Eugene Rusakov"/><br /><sub><b>Eugene Rusakov</b></sub></a><br /><a href="https://github.com/ng-primitives/ng-primitives/commits?author=eurusik" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ido-g-coralogix"><img src="https://avatars.githubusercontent.com/u/122212383?v=4?s=100" width="100px;" alt="Ido Golan"/><br /><sub><b>Ido Golan</b></sub></a><br /><a href="https://github.com/ng-primitives/ng-primitives/commits?author=ido-g-coralogix" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/kostetskyroma"><img src="https://avatars.githubusercontent.com/u/12156197?v=4?s=100" width="100px;" alt="Roman Kostetskyi"/><br /><sub><b>Roman Kostetskyi</b></sub></a><br /><a href="https://github.com/ng-primitives/ng-primitives/commits?author=kostetskyroma" title="Code">💻</a></td>
+    </tr>
   </tbody>
 </table>
 

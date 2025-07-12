@@ -1,33 +1,36 @@
 import { FocusMonitor, FocusOrigin } from '@angular/cdk/a11y';
-import { BlockScrollStrategy, NoopScrollStrategy, ViewportRuler } from '@angular/cdk/overlay';
+import { ViewportRuler } from '@angular/cdk/overlay';
 import { DOCUMENT } from '@angular/common';
 import {
   DestroyRef,
   Injector,
   Provider,
+  Signal,
   TemplateRef,
   Type,
   ViewContainerRef,
+  computed,
   inject,
   runInInjectionContext,
   signal,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   Middleware,
   Placement,
   Strategy,
+  arrow,
   autoUpdate,
   computePosition,
   flip,
   offset,
   shift,
 } from '@floating-ui/dom';
-import { fromResizeEvent } from 'ng-primitives/resize';
-import { injectDisposables } from 'ng-primitives/utils';
+import { fromResizeEvent } from 'ng-primitives/internal';
+import { injectDisposables, safeTakeUntilDestroyed, uniqueId } from 'ng-primitives/utils';
 import { Subject, fromEvent } from 'rxjs';
 import { provideOverlayContext } from './overlay-token';
 import { NgpPortal, createPortal } from './portal';
+import { BlockScrollStrategy, NoopScrollStrategy } from './scroll-strategy';
 
 /**
  * Configuration options for creating an overlay
@@ -42,9 +45,11 @@ export interface NgpOverlayConfig<T = unknown> {
 
   /** The injector to use for creating the portal */
   injector: Injector;
+  /** ViewContainerRef to use for creating the portal */
+  viewContainerRef: ViewContainerRef;
 
   /** Context data to pass to the overlay content */
-  context?: T | null;
+  context?: Signal<T | undefined>;
 
   /** Container element to attach the overlay to (defaults to document.body) */
   container?: HTMLElement | null;
@@ -99,7 +104,7 @@ export class NgpOverlay<T = unknown> {
   private readonly disposables = injectDisposables();
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly viewContainerRef = inject(ViewContainerRef);
+  private readonly viewContainerRef: ViewContainerRef;
   private readonly viewportRuler = inject(ViewportRuler);
   private readonly focusMonitor = inject(FocusMonitor);
   /** Access any parent overlays */
@@ -108,13 +113,27 @@ export class NgpOverlay<T = unknown> {
   private readonly portal = signal<NgpPortal | null>(null);
 
   /** Signal tracking the overlay position */
-  readonly position = signal<{ x: number; y: number }>({ x: 0, y: 0 });
+  readonly position = signal<{ x: number | undefined; y: number | undefined }>({
+    x: undefined,
+    y: undefined,
+  });
+
+  /**
+   * Determine if the overlay has been positioned
+   * @internal
+   */
+  readonly isPositioned = computed(
+    () => this.position().x !== undefined && this.position().y !== undefined,
+  );
 
   /** Signal tracking the trigger element width */
   readonly triggerWidth = signal<number | null>(null);
 
   /** The transform origin for the overlay */
   readonly transformOrigin = signal<string>('center center');
+
+  /** Signal tracking the final placement of the overlay */
+  readonly finalPlacement = signal<Placement | undefined>(undefined);
 
   /** Function to dispose the positioning auto-update */
   private disposePositioning?: () => void;
@@ -128,11 +147,26 @@ export class NgpOverlay<T = unknown> {
   /** Signal tracking whether the overlay is open */
   readonly isOpen = signal(false);
 
+  /** A unique id for the overlay */
+  readonly id = signal<string>(uniqueId('ngp-overlay'));
+
+  /** The aria-describedby attribute for accessibility */
+  readonly ariaDescribedBy = computed(() => (this.isOpen() ? this.id() : undefined));
+
   /** The scroll strategy */
   private scrollStrategy = new NoopScrollStrategy();
 
   /** An observable that emits when the overlay is closing */
   readonly closing = new Subject<void>();
+
+  /** Store the arrow element */
+  private arrowElement: HTMLElement | null = null;
+
+  /** @internal The position of the arrow */
+  readonly arrowPosition = signal<{ x: number | undefined; y: number | undefined }>({
+    x: undefined,
+    y: undefined,
+  });
 
   /**
    * Creates a new overlay instance
@@ -140,18 +174,21 @@ export class NgpOverlay<T = unknown> {
    * @param destroyRef Reference for automatic cleanup
    */
   constructor(private config: NgpOverlayConfig<T>) {
+    // we cannot inject the viewContainerRef as this can throw an error during hydration in SSR
+    this.viewContainerRef = config.viewContainerRef;
+
     // this must be done after the config is set
     this.transformOrigin.set(this.getTransformOrigin());
 
     // Monitor trigger element resize
     fromResizeEvent(this.config.triggerElement)
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(safeTakeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         this.triggerWidth.set(this.config.triggerElement.offsetWidth);
       });
 
     // if there is a parent overlay and it is closed, close this overlay
-    this.parentOverlay?.closing.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+    this.parentOverlay?.closing.pipe(safeTakeUntilDestroyed(this.destroyRef)).subscribe(() => {
       if (this.isOpen()) {
         this.hideImmediate();
       }
@@ -159,7 +196,7 @@ export class NgpOverlay<T = unknown> {
 
     // If closeOnOutsideClick is enabled, set up a click listener
     fromEvent<MouseEvent>(this.document, 'mouseup', { capture: true })
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(safeTakeUntilDestroyed(this.destroyRef))
       .subscribe(event => {
         if (!this.config.closeOnOutsideClick) {
           return;
@@ -182,7 +219,7 @@ export class NgpOverlay<T = unknown> {
 
     // If closeOnEscape is enabled, set up a keydown listener
     fromEvent<KeyboardEvent>(this.document, 'keydown', { capture: true })
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(safeTakeUntilDestroyed(this.destroyRef))
       .subscribe(event => {
         if (!this.config.closeOnEscape) return;
         if (event.key === 'Escape' && this.isOpen()) {
@@ -223,6 +260,18 @@ export class NgpOverlay<T = unknown> {
   }
 
   /**
+   * Stop any pending close operation. This is useful for example, if we move the mouse from the tooltip trigger to the tooltip itself.
+   * This will prevent the tooltip from closing immediately when the mouse leaves the trigger.
+   * @internal
+   */
+  cancelPendingClose(): void {
+    if (this.closeTimeout) {
+      this.closeTimeout();
+      this.closeTimeout = undefined;
+    }
+  }
+
+  /**
    * Hide the overlay with the specified delay
    * @param options Optional options for hiding the overlay
    */
@@ -233,25 +282,31 @@ export class NgpOverlay<T = unknown> {
       this.openTimeout = undefined;
     }
 
-    // Don't proceed if already closing or closed
-    if (this.closeTimeout || !this.isOpen()) {
+    // Don't proceed if already closing or closed unless immediate is true
+    if ((this.closeTimeout && !options?.immediate) || !this.isOpen()) {
       return;
     }
 
     this.closing.next();
 
-    // Use the provided delay or fall back to config
-    const delay = options?.immediate ? 0 : (this.config.hideDelay ?? 0);
-
-    this.closeTimeout = this.disposables.setTimeout(async () => {
+    const dispose = async () => {
       this.closeTimeout = undefined;
 
       if (this.config.restoreFocus) {
-        this.focusMonitor.focusVia(this.config.triggerElement, options?.origin ?? 'program');
+        this.focusMonitor.focusVia(this.config.triggerElement, options?.origin ?? 'program', {
+          preventScroll: true,
+        });
       }
 
       await this.destroyOverlay();
-    }, delay);
+    };
+
+    if (options?.immediate) {
+      // If immediate, dispose right away
+      dispose();
+    } else {
+      this.closeTimeout = this.disposables.setTimeout(dispose, this.config.hideDelay ?? 0);
+    }
   }
 
   /**
@@ -340,7 +395,7 @@ export class NgpOverlay<T = unknown> {
         providers: [
           ...(this.config.providers || []),
           { provide: NgpOverlay, useValue: this },
-          provideOverlayContext<T>(this.config.context as T),
+          provideOverlayContext<T>(this.config.context),
         ],
       }),
       { $implicit: this.config.context } as NgpOverlayTemplateContext<T>,
@@ -416,6 +471,11 @@ export class NgpOverlay<T = unknown> {
       middleware.push(...this.config.additionalMiddleware);
     }
 
+    // If the arrow element is registered, add arrow middleware
+    if (this.arrowElement) {
+      middleware.push(arrow({ element: this.arrowElement }));
+    }
+
     // Compute the position
     const position = await computePosition(this.config.triggerElement, overlayElement, {
       placement: this.config.placement || 'top',
@@ -425,6 +485,17 @@ export class NgpOverlay<T = unknown> {
 
     // Update position signal
     this.position.set({ x: position.x, y: position.y });
+
+    // Update final placement signal
+    this.finalPlacement.set(position.placement);
+
+    // Update arrow position if available
+    if (this.arrowElement) {
+      this.arrowPosition.set({
+        x: position.middlewareData.arrow?.x,
+        y: position.middlewareData.arrow?.y,
+      });
+    }
 
     // Ensure view is updated
     this.portal()?.detectChanges();
@@ -452,6 +523,9 @@ export class NgpOverlay<T = unknown> {
 
     // Mark as closed
     this.isOpen.set(false);
+
+    // Reset final placement
+    this.finalPlacement.set(undefined);
 
     // disable scroll strategy
     this.scrollStrategy.disable();
@@ -488,6 +562,22 @@ export class NgpOverlay<T = unknown> {
     }
 
     return `${y} ${x}`;
+  }
+
+  /**
+   * Register the arrow element for positioning
+   * @internal
+   */
+  registerArrow(arrowElement: HTMLElement | null): void {
+    this.arrowElement = arrowElement;
+  }
+
+  /**
+   * Remove the registered arrow element
+   * @internal
+   */
+  unregisterArrow(): void {
+    this.arrowElement = null;
   }
 }
 

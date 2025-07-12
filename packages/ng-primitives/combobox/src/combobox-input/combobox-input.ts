@@ -1,7 +1,7 @@
 import { computed, Directive, HostListener, input } from '@angular/core';
+import { setupFormControl } from 'ng-primitives/form-field';
 import { injectElementRef, setupInteractions } from 'ng-primitives/internal';
 import { uniqueId } from 'ng-primitives/utils';
-import type { NgpComboboxOption } from '../combobox-option/combobox-option';
 import { injectComboboxState } from '../combobox/combobox-state';
 
 @Directive({
@@ -38,17 +38,6 @@ export class NgpComboboxInput {
   /** The id of the input. */
   readonly id = input<string>(uniqueId('ngp-combobox-input'));
 
-  /**
-   * Extract the string representation of the value.
-   */
-  readonly displayWith = input<(value: any) => string>((value: any) => {
-    if (typeof value === 'string') {
-      return value;
-    }
-
-    throw new Error('You must provide a displayWith function for non-string values');
-  });
-
   /** The id of the dropdown. */
   readonly dropdownId = computed(() => this.state().dropdown()?.id());
 
@@ -59,6 +48,12 @@ export class NgpComboboxInput {
 
   /** Determine if the pointer was used to focus the input. */
   protected pointerFocused = false;
+
+  /**
+   * The control status - this is required as we apply them to the combobox element as well as the input element.
+   * @internal
+   */
+  readonly controlStatus = setupFormControl({ id: this.id, disabled: this.state().disabled });
 
   constructor() {
     setupInteractions({
@@ -106,15 +101,19 @@ export class NgpComboboxInput {
         break;
       case 'Enter':
         if (this.state().open()) {
-          this.state().selectOption(
-            this.state().activeDescendantManager.activeItem() as NgpComboboxOption,
-          );
+          this.state().selectOption(this.state().activeDescendantManager.activeItem());
         }
         event.preventDefault();
         break;
       case 'Escape':
         this.state().closeDropdown();
         event.preventDefault();
+        break;
+      case 'Backspace':
+        // if the input is not empty then open the dropdown
+        if (this.elementRef.nativeElement.value.length > 0) {
+          this.state().openDropdown();
+        }
         break;
       default:
         // Ignore keys with length > 1 (e.g., 'Shift', 'ArrowLeft', 'Enter', etc.)

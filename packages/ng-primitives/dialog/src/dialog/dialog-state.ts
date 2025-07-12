@@ -9,7 +9,7 @@ import type { NgpDialog } from './dialog';
 /**
  * The state token  for the Dialog primitive.
  */
-export const NgpDialogStateToken = createStateToken<NgpDialog>('Dialog');
+export const NgpDialogStateToken = createStateToken<NgpDialog<any, any>>('Dialog');
 
 /**
  * Provides the Dialog state.
@@ -19,7 +19,7 @@ export const provideDialogState = createStateProvider(NgpDialogStateToken);
 /**
  * Injects the Dialog state.
  */
-export const injectDialogState = createStateInjector(NgpDialogStateToken);
+export const injectDialogState = createStateInjector<NgpDialog>(NgpDialogStateToken);
 
 /**
  * The Dialog state registration function.

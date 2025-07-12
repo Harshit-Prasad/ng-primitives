@@ -75,11 +75,21 @@ The main container for the combobox.
 
 The following data attributes are applied to the `ngpCombobox` directive:
 
-| Attribute       | Description                                    |
-| --------------- | ---------------------------------------------- |
-| `data-open`     | Applied when the combobox is open.             |
-| `data-disabled` | Applied when the combobox is disabled.         |
-| `data-multiple` | Applied when the combobox is in multiple mode. |
+| Attribute       | Description                                                    |
+| --------------- | -------------------------------------------------------------- |
+| `data-open`     | Applied when the combobox is open.                             |
+| `data-disabled` | Applied when the combobox is disabled.                         |
+| `data-multiple` | Applied when the combobox is in multiple mode.                 |
+| `data-hover`    | Applied when the combobox is hovered.                          |
+| `data-press`    | Applied when the combobox is pressed.                          |
+| `data-focus`    | Applied when the combobox has focus within it.                 |
+| `data-invalid`  | Applied when the combobox is invalid.                          |
+| `data-valid`    | Applied when the combobox is valid.                            |
+| `data-touched`  | Applied when the combobox has been touched.                    |
+| `data-pristine` | Applied when the combobox is pristine (not modified).          |
+| `data-dirty`    | Applied when the combobox has been modified.                   |
+| `data-pending`  | Applied when the combobox is pending (e.g., async validation). |
+| `data-disabled` | Applied when the combobox is disabled.                         |
 
 ### NgpComboboxButton
 
@@ -103,6 +113,17 @@ The dropdown that contains the combobox options.
 
 <api-docs name="NgpComboboxDropdown"></api-docs>
 
+#### CSS Custom Properties
+
+The following CSS custom properties are applied to the `ngpComboboxDropdown` directive:
+
+| Property                          | Description                                      |
+| --------------------------------- | ------------------------------------------------ |
+| `--ngp-combobox-transform-origin` | The transform origin for the dropdown animation. |
+| `--ngp-combobox-width`            | The width of the combobox dropdown.              |
+| `--ngp-combobox-input-width`      | The width of the combobox input field.           |
+| `--ngp-combobox-button-width`     | The width of the combobox button.                |
+
 ### NgpComboboxInput
 
 The input field for the combobox.
@@ -113,11 +134,18 @@ The input field for the combobox.
 
 The following data attributes are applied to the `ngpComboboxInput` directive:
 
-| Attribute       | Description                                    |
-| --------------- | ---------------------------------------------- |
-| `data-open`     | Applied when the combobox is open.             |
-| `data-disabled` | Applied when the combobox is disabled.         |
-| `data-multiple` | Applied when the combobox is in multiple mode. |
+| Attribute       | Description                                                 |
+| --------------- | ----------------------------------------------------------- |
+| `data-open`     | Applied when the combobox is open.                          |
+| `data-disabled` | Applied when the combobox is disabled.                      |
+| `data-multiple` | Applied when the combobox is in multiple mode.              |
+| `data-invalid`  | Applied when the input is invalid.                          |
+| `data-valid`    | Applied when the input is valid.                            |
+| `data-touched`  | Applied when the input has been touched.                    |
+| `data-pristine` | Applied when the input is pristine (not modified).          |
+| `data-dirty`    | Applied when the input has been modified.                   |
+| `data-pending`  | Applied when the input is pending (e.g., async validation). |
+| `data-disabled` | Applied when the input is disabled.                         |
 
 ### NgpComboboxOption
 

@@ -13,7 +13,7 @@ Display arbitrary content inside floating panels.
 Import the Popover primitives from `ng-primitives/popover`.
 
 ```ts
-import { NgpPopover, NgpPopoverTrigger } from 'ng-primitives/popover';
+import { NgpPopover, NgpPopoverTrigger, NgpPopoverArrow } from 'ng-primitives/popover';
 ```
 
 ## Usage
@@ -21,12 +21,16 @@ import { NgpPopover, NgpPopoverTrigger } from 'ng-primitives/popover';
 Assemble the popover directives in your template.
 
 ```html
-<button [ngpPopoverTrigger]="popover">Click me</button>
+<button [ngpPopoverTrigger]="popover" (ngpPopoverTriggerOpenChange)="onPopoverStateChange($event)">
+  Click me
+</button>
 
 <ng-template #popover>
   <div ngpPopover>Popover content</div>
 </ng-template>
 ```
+
+You can listen to the `ngpPopoverTriggerOpenChange` event to perform actions when the popover state changes. The event emits a boolean value indicating whether the popover is open or closed:
 
 ## Reusable Component
 
@@ -42,15 +46,55 @@ The following directives are available to import from the `ng-primitives/popover
 
 <api-docs name="NgpPopover"></api-docs>
 
+#### Data Attributes
+
+| Attribute        | Description                                                                                     |
+| ---------------- | ----------------------------------------------------------------------------------------------- |
+| `data-enter`     | Applied when the popover is being added to the DOM. This can be used to trigger animations.     |
+| `data-exit`      | Applied when the popover is being removed from the DOM. This can be used to trigger animations. |
+| `data-placement` | The final rendered placement of the popover.                                                    |
+
+The following CSS custom properties are applied to the `ngpPopover` directive:
+
+| Property                         | Description                                         |
+| -------------------------------- | --------------------------------------------------- |
+| `--ngp-popover-transform-origin` | The transform origin of the popover for animations. |
+| `--ngp-popover-trigger-width`    | The width of the trigger element.                   |
+
 ### NgpPopoverTrigger
 
 <api-docs name="NgpPopoverTrigger"></api-docs>
 
 #### Data Attributes
 
-| Attribute   | Description                       |
-| ----------- | --------------------------------- |
-| `data-open` | Applied when the popover is open. |
+| Attribute       | Description                           |
+| --------------- | ------------------------------------- |
+| `data-open`     | Applied when the popover is open.     |
+| `data-disabled` | Applied when the popover is disabled. |
+
+### NgpPopoverArrow
+
+The `NgpPopoverArrow` directive is used to add an arrow to the popover. It should be placed inside the popover content. It will receive `inset-inline-start` or `inset-block-start` styles to position the arrow based on the popover's placement. As a result it should be positioned absolutely within the popover content.
+
+The arrow can be styled conditionally based on the popover's final placement using the `data-placement` attribute:
+
+```css
+[ngpPopoverArrow][data-placement='top'] {
+  /* Arrow styles when popover is positioned on top */
+}
+
+[ngpPopoverArrow][data-placement='bottom'] {
+  /* Arrow styles when popover is positioned on bottom */
+}
+```
+
+<api-docs name="NgpPopoverArrow"></api-docs>
+
+### Data Attributes
+
+| Attribute        | Description                                  |
+| ---------------- | -------------------------------------------- |
+| `data-placement` | The final rendered placement of the popover. |
 
 ## Styling
 

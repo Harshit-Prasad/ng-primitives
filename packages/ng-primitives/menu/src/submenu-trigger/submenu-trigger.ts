@@ -10,24 +10,24 @@ import {
   input,
   numberAttribute,
   signal,
+  ViewContainerRef,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Placement } from '@floating-ui/dom';
-import { injectElementRef, provideExitAnimationManager } from 'ng-primitives/internal';
+import { injectElementRef } from 'ng-primitives/internal';
 import {
   createOverlay,
   NgpOverlay,
   NgpOverlayConfig,
   NgpOverlayContent,
 } from 'ng-primitives/portal';
-import { injectMenuTriggerState } from '../menu-trigger/menu-trigger-state';
+import { safeTakeUntilDestroyed } from 'ng-primitives/utils';
 import { NgpMenuToken } from '../menu/menu-token';
 import { provideSubmenuTriggerState, submenuTriggerState } from './submenu-trigger-state';
 
 @Directive({
   selector: '[ngpSubmenuTrigger]',
   exportAs: 'ngpSubmenuTrigger',
-  providers: [provideSubmenuTriggerState({ inherit: false }), provideExitAnimationManager()],
+  providers: [provideSubmenuTriggerState({ inherit: false })],
   host: {
     'aria-haspopup': 'true',
     '[attr.aria-expanded]': 'open() ? "true" : "false"',
@@ -46,8 +46,10 @@ export class NgpSubmenuTrigger<T = unknown> {
    */
   private readonly injector = inject(Injector);
 
-  /** Access the menu trigger state */
-  private readonly menuTrigger = injectMenuTriggerState();
+  /**
+   * Access the view container reference.
+   */
+  private readonly viewContainerRef = inject(ViewContainerRef);
 
   /** Access the parent menu */
   private readonly parentMenu = inject(NgpMenuToken, { optional: true });
@@ -64,7 +66,7 @@ export class NgpSubmenuTrigger<T = unknown> {
    * @default false
    */
   readonly disabled = input<boolean, BooleanInput>(false, {
-    alias: 'ngpMenuTriggerDisabled',
+    alias: 'ngpSubmenuTriggerDisabled',
     transform: booleanAttribute,
   });
 
@@ -73,7 +75,7 @@ export class NgpSubmenuTrigger<T = unknown> {
    * @default 'right-start'
    */
   readonly placement = input<Placement>('right-start', {
-    alias: 'ngpMenuTriggerPlacement',
+    alias: 'ngpSubmenuTriggerPlacement',
   });
 
   /**
@@ -81,7 +83,7 @@ export class NgpSubmenuTrigger<T = unknown> {
    * @default 0
    */
   readonly offset = input<number, NumberInput>(0, {
-    alias: 'ngpMenuTriggerOffset',
+    alias: 'ngpSubmenuTriggerOffset',
     transform: numberAttribute,
   });
 
@@ -90,7 +92,7 @@ export class NgpSubmenuTrigger<T = unknown> {
    * @default true
    */
   readonly flip = input<boolean, BooleanInput>(true, {
-    alias: 'ngpMenuTriggerFlip',
+    alias: 'ngpSubmenuTriggerFlip',
     transform: booleanAttribute,
   });
 
@@ -112,12 +114,7 @@ export class NgpSubmenuTrigger<T = unknown> {
   readonly state = submenuTriggerState<NgpSubmenuTrigger<T>>(this);
 
   constructor() {
-    // by default the menu opens below and to the center of the trigger,
-    // but as this is a submenu we want to default to opening to the right
-    // and to the start
-    this.menuTrigger().placement.set('right-start');
-
-    this.parentMenu?.closeSubmenus.pipe(takeUntilDestroyed()).subscribe(element => {
+    this.parentMenu?.closeSubmenus.pipe(safeTakeUntilDestroyed()).subscribe(element => {
       // if the element is not the trigger, we want to close the menu
       if (element === this.trigger.nativeElement) {
         return;
@@ -197,6 +194,7 @@ export class NgpSubmenuTrigger<T = unknown> {
       closeOnOutsideClick: true,
       closeOnEscape: true,
       restoreFocus: true,
+      viewContainerRef: this.viewContainerRef,
     };
 
     this.overlay.set(createOverlay(config));
@@ -227,8 +225,14 @@ export class NgpSubmenuTrigger<T = unknown> {
   /**
    * If the user hovers over the trigger, we want to open the submenu
    */
-  @HostListener('mouseenter')
-  protected showSubmenuOnHover(): void {
+  @HostListener('pointerenter', ['$event'])
+  protected showSubmenuOnHover(event: PointerEvent): void {
+    // if this was triggered by a touch event, we don't want to show the submenu
+    // as it will be shown by the click event - this prevents the submenu from being toggled
+    if (event.pointerType === 'touch') {
+      return;
+    }
+
     this.show();
   }
 }

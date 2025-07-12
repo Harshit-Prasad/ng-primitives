@@ -64,6 +64,14 @@ import { NgpMenu, NgpMenuItem, NgpMenuTrigger } from 'ng-primitives/menu';
       animation: menu-hide 0.1s ease-out;
     }
 
+    [ngpMenu][data-enter] {
+      animation: menu-show 0.1s ease-out;
+    }
+
+    [ngpMenu][data-exit] {
+      animation: menu-hide 0.1s ease-out;
+    }
+
     [ngpMenuItem] {
       padding: 6px 14px;
       border: none;
@@ -79,6 +87,10 @@ import { NgpMenu, NgpMenuItem, NgpMenuTrigger } from 'ng-primitives/menu';
     }
 
     [ngpMenuItem][data-hover] {
+      background-color: var(--ngp-background-hover);
+    }
+
+    [ngpMenuItem][data-press] {
       background-color: var(--ngp-background-active);
     }
 

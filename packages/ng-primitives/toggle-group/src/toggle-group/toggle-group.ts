@@ -1,7 +1,7 @@
 import { BooleanInput } from '@angular/cdk/coercion';
 import { booleanAttribute, Directive, input, output } from '@angular/core';
 import { NgpOrientation } from 'ng-primitives/common';
-import { syncState } from 'ng-primitives/internal';
+import { explicitEffect } from 'ng-primitives/internal';
 import { injectRovingFocusGroupState, NgpRovingFocusGroup } from 'ng-primitives/roving-focus';
 import { injectToggleGroupConfig } from '../config/toggle-group-config';
 import { provideToggleGroupState, toggleGroupState } from './toggle-group-state';
@@ -37,6 +37,15 @@ export class NgpToggleGroup {
   });
 
   /**
+   * Whether toggle buttons can be deselected. If set to `false`, clicking a selected toggle button will not deselect it.
+   * @default true
+   */
+  readonly allowDeselection = input<boolean, BooleanInput>(this.config.allowDeselection, {
+    alias: 'ngpToggleGroupAllowDeselection',
+    transform: booleanAttribute,
+  });
+
+  /**
    * The type of the toggle group, whether only one item can be selected or multiple.
    */
   readonly type = input<'single' | 'multiple'>(this.config.type, { alias: 'ngpToggleGroupType' });
@@ -67,7 +76,9 @@ export class NgpToggleGroup {
   constructor() {
     // the roving focus group defaults to vertical orientation whereas
     // the default for the toggle group may be different if provided via global config
-    syncState(this.state.orientation, this.rovingFocusGroupState().orientation);
+    explicitEffect([this.state.orientation], ([orientation]) =>
+      this.rovingFocusGroupState().orientation.set(orientation),
+    );
   }
 
   /**
@@ -78,25 +89,29 @@ export class NgpToggleGroup {
       return;
     }
 
+    let newValue: string[] = [];
+
     if (this.state.type() === 'single') {
-      this.state.value.set([value]);
+      newValue = [value];
     } else {
-      this.state.value.set([...this.state.value(), value]);
+      newValue = [...this.state.value(), value];
     }
 
-    this.valueChange.emit(this.state.value());
+    this.state.value.set(newValue);
+    this.valueChange.emit(newValue);
   }
 
   /**
    * De-select a value in the toggle group.
    */
   private deselect(value: string): void {
-    if (this.state.disabled()) {
+    if (this.state.disabled() || !this.state.allowDeselection()) {
       return;
     }
 
-    this.state.value.set(this.state.value().filter(v => v !== value));
-    this.valueChange.emit(this.state.value());
+    const newValue = this.state.value().filter(v => v !== value);
+    this.state.value.set(newValue);
+    this.valueChange.emit(newValue);
   }
 
   /**

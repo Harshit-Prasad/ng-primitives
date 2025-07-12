@@ -25,12 +25,34 @@ Assemble the menu directives in your template.
 
 <ng-template #menu>
   <div ngpMenu>
-    <div ngpMenuItem>Item 1</div>
-    <div ngpMenuItem>Item 2</div>
-    <div ngpMenuItem>Item 3</div>
+    <button ngpMenuItem>Item 1</button>
+    <button ngpMenuItem>Item 2</button>
+    <button ngpMenuItem>Item 3</button>
   </div>
 </ng-template>
 ```
+
+## Reusable Component
+
+Create reusable components that use the `NgpMenu` directive.
+
+<docs-snippet name="menu"></docs-snippet>
+
+## Schematics
+
+Generate a reusable menu component using the Angular CLI.
+
+```bash npm
+ng g ng-primitives:primitive menu
+```
+
+### Options
+
+- `path`: The path at which to create the component file.
+- `prefix`: The prefix to apply to the generated component selector.
+- `componentSuffix`: The suffix to apply to the generated component class name.
+- `fileSuffix`: The suffix to apply to the generated component file name. Defaults to `component`.
+- `exampleStyles`: Whether to include example styles in the generated component file. Defaults to `true`.
 
 ## Examples
 
@@ -62,6 +84,13 @@ The following data attributes are available on the `NgpMenuTrigger` directive:
 
 <api-docs name="NgpMenu"></api-docs>
 
+The following CSS custom properties are applied to the `ngpMenu` directive:
+
+| Property                      | Description                                      |
+| ----------------------------- | ------------------------------------------------ |
+| `--ngp-menu-transform-origin` | The transform origin of the menu for animations. |
+| `--ngp-menu-trigger-width`    | The width of the trigger element.                |
+
 ### NgpMenuItem
 
 <api-docs name="NgpMenuItem"></api-docs>
@@ -73,6 +102,18 @@ The following data attributes are available on the `NgpMenuItem` directive:
 | Attribute       | Description                        |
 | --------------- | ---------------------------------- |
 | `data-disabled` | Applied when the item is disabled. |
+
+### NgpSubmenuTrigger
+
+<api-docs name="NgpSubmenuTrigger"></api-docs>
+
+#### Data Attributes
+
+The following data attributes are available on the `NgpSubmenuTrigger` directive:
+
+| Attribute   | Description                       |
+| ----------- | --------------------------------- |
+| `data-open` | Applied when the submenu is open. |
 
 ## Styling
 

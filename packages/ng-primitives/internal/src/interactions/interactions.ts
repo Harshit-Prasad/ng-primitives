@@ -1,4 +1,6 @@
 import { signal, Signal } from '@angular/core';
+import { injectElementRef } from '../utilities/element-ref';
+import { hasInteraction } from '../utilities/interaction';
 import { setupFocus } from './focus';
 import { setupFocusVisible } from './focus-visible';
 import { setupHover } from './hover';
@@ -8,6 +10,7 @@ export interface NgpInteractionOptions {
   hover?: boolean;
   press?: boolean;
   focus?: boolean;
+  focusWithin?: boolean;
   focusVisible?: boolean;
   disabled?: Signal<boolean>;
 }
@@ -19,9 +22,16 @@ export function setupInteractions({
   focus,
   hover,
   press,
+  focusWithin,
   focusVisible,
   disabled = signal(false),
 }: NgpInteractionOptions): void {
+  const elementRef = injectElementRef();
+  // If the interaction has already been setup, we can skip the setup.
+  if (hasInteraction(elementRef.nativeElement, 'interactions')) {
+    return;
+  }
+
   if (hover) {
     setupHover({ disabled });
   }
@@ -29,7 +39,7 @@ export function setupInteractions({
     setupPress({ disabled });
   }
   if (focus) {
-    setupFocus({ disabled });
+    setupFocus({ focusWithin, disabled });
   }
   if (focusVisible) {
     setupFocusVisible({ disabled });

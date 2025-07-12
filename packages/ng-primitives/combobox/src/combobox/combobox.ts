@@ -1,6 +1,6 @@
 import { BooleanInput } from '@angular/cdk/coercion';
 import {
-  afterNextRender,
+  afterRenderEffect,
   booleanAttribute,
   computed,
   Directive,
@@ -12,11 +12,7 @@ import {
 } from '@angular/core';
 import { Placement } from '@floating-ui/dom';
 import { activeDescendantManager } from 'ng-primitives/a11y';
-import {
-  explicitEffect,
-  injectElementRef,
-  provideExitAnimationManager,
-} from 'ng-primitives/internal';
+import { injectElementRef, setupInteractions } from 'ng-primitives/internal';
 import type { NgpComboboxButton } from '../combobox-button/combobox-button';
 import type { NgpComboboxDropdown } from '../combobox-dropdown/combobox-dropdown';
 import type { NgpComboboxInput } from '../combobox-input/combobox-input';
@@ -41,11 +37,17 @@ type T = any;
 @Directive({
   selector: '[ngpCombobox]',
   exportAs: 'ngpCombobox',
-  providers: [provideComboboxState(), provideExitAnimationManager()],
+  providers: [provideComboboxState()],
   host: {
     '[attr.data-open]': 'state.open() ? "" : undefined',
     '[attr.data-disabled]': 'state.disabled() ? "" : undefined',
     '[attr.data-multiple]': 'state.multiple() ? "" : undefined',
+    '[attr.data-invalid]': 'controlStatus()?.invalid ? "" : undefined',
+    '[attr.data-valid]': 'controlStatus()?.valid ? "" : undefined',
+    '[attr.data-touched]': 'controlStatus()?.touched ? "" : undefined',
+    '[attr.data-pristine]': 'controlStatus()?.pristine ? "" : undefined',
+    '[attr.data-dirty]': 'controlStatus()?.dirty ? "" : undefined',
+    '[attr.data-pending]': 'controlStatus()?.pending ? "" : undefined',
   },
 })
 export class NgpCombobox {
@@ -144,16 +146,36 @@ export class NgpCombobox {
     items: this.options,
   });
 
+  /** The control status */
+  protected readonly controlStatus = computed(() => this.input()?.controlStatus());
+
   /** The state of the combobox. */
   protected readonly state = comboboxState<NgpCombobox>(this);
 
   constructor() {
+    setupInteractions({
+      focus: true,
+      focusWithin: true,
+      hover: true,
+      press: true,
+      disabled: this.state.disabled,
+    });
+
     // any time the active descendant changes, ensure we scroll it into view
-    explicitEffect([this.activeDescendantManager.activeItem], ([option]) =>
-      // perform after next render to ensure the DOM is updated
-      // e.g. the dropdown is open before the option is scrolled into view
-      afterNextRender({ write: () => option?.scrollIntoView?.() }, { injector: this.injector }),
-    );
+    // perform after next render to ensure the DOM is updated
+    // e.g. the dropdown is open before the option is scrolled into view
+    afterRenderEffect({
+      write: () => {
+        const isPositioned = this.portal()?.overlay()?.isPositioned() ?? false;
+        const activeItem = this.activeDescendantManager.activeItem();
+
+        if (!isPositioned || !activeItem) {
+          return;
+        }
+
+        this.activeDescendantManager.activeItem()?.scrollIntoView?.();
+      },
+    });
   }
 
   /**
@@ -202,11 +224,11 @@ export class NgpCombobox {
    * Toggle the dropdown.
    * @internal
    */
-  toggleDropdown(): void {
+  async toggleDropdown(): Promise<void> {
     if (this.open()) {
       this.closeDropdown();
     } else {
-      this.openDropdown();
+      await this.openDropdown();
     }
   }
 
@@ -215,8 +237,14 @@ export class NgpCombobox {
    * @param option The option to select.
    * @internal
    */
-  selectOption(option: NgpComboboxOption): void {
+  selectOption(option: NgpComboboxOption | undefined): void {
     if (this.state.disabled()) {
+      return;
+    }
+
+    if (!option) {
+      this.state.value.set(undefined);
+      this.closeDropdown();
       return;
     }
 
@@ -271,6 +299,14 @@ export class NgpCombobox {
       return;
     }
 
+    // if the state is single selection, we don't allow toggling
+    if (!this.state.multiple()) {
+      // always select the option in single selection mode even if it is already selected so that we update the input
+      this.selectOption(option);
+      return;
+    }
+
+    // otherwise toggle the option
     if (this.isOptionSelected(option)) {
       this.deselectOption(option);
     } else {

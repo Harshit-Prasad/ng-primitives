@@ -10,9 +10,10 @@ import {
   numberAttribute,
   OnDestroy,
   signal,
+  ViewContainerRef,
 } from '@angular/core';
 import { Placement } from '@floating-ui/dom';
-import { injectElementRef, provideExitAnimationManager } from 'ng-primitives/internal';
+import { injectElementRef } from 'ng-primitives/internal';
 import {
   createOverlay,
   NgpOverlay,
@@ -28,7 +29,7 @@ import { menuTriggerState, provideMenuTriggerState } from './menu-trigger-state'
 @Directive({
   selector: '[ngpMenuTrigger]',
   exportAs: 'ngpMenuTrigger',
-  providers: [provideMenuTriggerState({ inherit: false }), provideExitAnimationManager()],
+  providers: [provideMenuTriggerState({ inherit: false })],
   host: {
     'aria-haspopup': 'true',
     '[attr.aria-expanded]': 'open() ? "true" : "false"',
@@ -47,6 +48,11 @@ export class NgpMenuTrigger<T = unknown> implements OnDestroy {
    * Access the injector.
    */
   private readonly injector = inject(Injector);
+
+  /**
+   * Access the view container reference.
+   */
+  private readonly viewContainerRef = inject(ViewContainerRef);
 
   /**
    * Access the global menu configuration.
@@ -202,8 +208,9 @@ export class NgpMenuTrigger<T = unknown> implements OnDestroy {
     const config: NgpOverlayConfig<T> = {
       content: menu,
       triggerElement: this.trigger.nativeElement,
+      viewContainerRef: this.viewContainerRef,
       injector: this.injector,
-      context: this.state.context(),
+      context: this.state.context,
       container: this.state.container(),
       placement: this.state.placement(),
       offset: this.state.offset(),

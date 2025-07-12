@@ -447,7 +447,6 @@ describe('NgpComboboxOption', () => {
 
   it('should render custom content inside option', async () => {
     @Component({
-      standalone: true,
       imports: [
         NgpCombobox,
         NgpComboboxButton,
@@ -478,7 +477,7 @@ describe('NgpComboboxOption', () => {
   });
 });
 
-describe('NgpComboboxInput accessibility', () => {
+describe('NgpComboboxInput', () => {
   afterEach(() => {
     // the dropdown should be removed from the DOM after each test
     // to avoid interference with other tests - it may linger due to waiting for animations
@@ -486,6 +485,13 @@ describe('NgpComboboxInput accessibility', () => {
     if (dropdown) {
       dropdown.remove();
     }
+  });
+
+  it('should not throw when text in entered that does not match any options and committed with enter', async () => {
+    await render(TestComponent);
+    const input = screen.getByRole('combobox');
+    await userEvent.type(input, 'Nonexistent Option');
+    expect(async () => await userEvent.keyboard('{enter}')).not.toThrow();
   });
 
   it('should have appropriate ARIA attributes', async () => {

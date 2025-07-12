@@ -1,13 +1,22 @@
 import {
-  RULE_NAME as avoidEarlyStateName,
   rule as avoidEarlyState,
+  RULE_NAME as avoidEarlyStateName,
 } from './rules/avoid-early-state';
-import { RULE_NAME as avoidModelName, rule as avoidModel } from './rules/avoid-model';
+import { rule as avoidModel, RULE_NAME as avoidModelName } from './rules/avoid-model';
+import { RULE_NAME as avoidStateEmitName, rule as avoidStateEmit } from './rules/avoid-state-emit';
 import {
-  RULE_NAME as preferEntrypointImportsName,
   rule as preferEntrypointImports,
+  RULE_NAME as preferEntrypointImportsName,
 } from './rules/prefer-entrypoint-imports';
-import { RULE_NAME as preferStateName, rule as preferState } from './rules/prefer-state';
+import { rule as preferState, RULE_NAME as preferStateName } from './rules/prefer-state';
+import {
+  rule as requireStateGeneric,
+  RULE_NAME as requireStateGenericName,
+} from './rules/require-state-generic';
+import {
+  RULE_NAME as takeUntilDestroyedName,
+  rule as takeUntilDestroyed,
+} from './rules/take-until-destroyed';
 
 /**
  * Import your custom workspace rules at the top of this file.
@@ -39,5 +48,8 @@ module.exports = {
     [preferStateName]: preferState,
     [avoidModelName]: avoidModel,
     [avoidEarlyStateName]: avoidEarlyState,
+    [requireStateGenericName]: requireStateGeneric,
+    [avoidStateEmitName]: avoidStateEmit,
+    [takeUntilDestroyedName]: takeUntilDestroyed,
   },
 };

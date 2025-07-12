@@ -9,10 +9,12 @@ import {
   input,
   numberAttribute,
   OnDestroy,
+  Signal,
   signal,
+  ViewContainerRef,
 } from '@angular/core';
 import { Placement } from '@floating-ui/dom';
-import { provideExitAnimationManager } from 'ng-primitives/internal';
+import { setupOverflowListener } from 'ng-primitives/internal';
 import {
   createOverlay,
   NgpOverlay,
@@ -28,10 +30,11 @@ import { provideTooltipTriggerState, tooltipTriggerState } from './tooltip-trigg
 @Directive({
   selector: '[ngpTooltipTrigger]',
   exportAs: 'ngpTooltipTrigger',
-  providers: [provideTooltipTriggerState(), provideExitAnimationManager()],
+  providers: [provideTooltipTriggerState()],
   host: {
     '[attr.data-open]': 'open() ? "" : null',
     '[attr.data-disabled]': 'state.disabled() ? "" : null',
+    '[attr.aria-describedby]': 'overlay()?.ariaDescribedBy()',
     '(mouseenter)': 'show()',
     '(mouseleave)': 'hide()',
     '(focus)': 'show()',
@@ -48,6 +51,11 @@ export class NgpTooltipTrigger<T = null> implements OnDestroy {
    * Access the injector.
    */
   private readonly injector = inject(Injector);
+
+  /**
+   * Access the view container reference.
+   */
+  private readonly viewContainerRef = inject(ViewContainerRef);
 
   /**
    * Access the global tooltip configuration.
@@ -123,6 +131,15 @@ export class NgpTooltipTrigger<T = null> implements OnDestroy {
   });
 
   /**
+   * Define whether the tooltip should only show when the trigger element overflows.
+   * @default false
+   */
+  readonly showOnOverflow = input<boolean, BooleanInput>(this.config.showOnOverflow, {
+    alias: 'ngpTooltipTriggerShowOnOverflow',
+    transform: booleanAttribute,
+  });
+
+  /**
    * Provide context to the tooltip. This can be used to pass data to the tooltip content.
    */
   readonly context = input<T>(undefined, {
@@ -136,16 +153,32 @@ export class NgpTooltipTrigger<T = null> implements OnDestroy {
   readonly overlay = signal<NgpOverlay<T> | null>(null);
 
   /**
+   * The unique id of the tooltip.
+   */
+  readonly tooltipId = signal<string | undefined>(undefined);
+
+  /**
    * The open state of the tooltip.
    * @internal
    */
   readonly open = computed(() => this.overlay()?.isOpen() ?? false);
 
   /**
+   * Determine if the trigger element has overflow.
+   */
+  private readonly hasOverflow: Signal<boolean>;
+
+  /**
    * Store the state of the tooltip.
    * @internal
    */
   readonly state = tooltipTriggerState<NgpTooltipTrigger<T>>(this);
+
+  constructor() {
+    this.hasOverflow = setupOverflowListener(this.trigger.nativeElement, {
+      disabled: computed(() => !this.state.showOnOverflow()),
+    });
+  }
 
   ngOnDestroy(): void {
     this.overlay()?.destroy();
@@ -157,6 +190,14 @@ export class NgpTooltipTrigger<T = null> implements OnDestroy {
   show(): void {
     // If the trigger is disabled, do not show the tooltip
     if (this.state.disabled() || this.open()) {
+      // we mark this as show again to stop it dismissing
+      this.overlay()?.cancelPendingClose();
+      return;
+    }
+
+    // if we should only show when there is overflow, check if the trigger has overflow
+    if (this.state.showOnOverflow() && !this.hasOverflow()) {
+      // If the trigger does not have overflow, do not show the tooltip
       return;
     }
 
@@ -195,7 +236,7 @@ export class NgpTooltipTrigger<T = null> implements OnDestroy {
       content: tooltip,
       triggerElement: this.trigger.nativeElement,
       injector: this.injector,
-      context: this.state.context(),
+      context: this.state.context,
       container: this.state.container(),
       placement: this.state.placement(),
       offset: this.state.offset(),
@@ -204,9 +245,17 @@ export class NgpTooltipTrigger<T = null> implements OnDestroy {
       hideDelay: this.state.hideDelay(),
       closeOnEscape: true,
       closeOnOutsideClick: true,
+      viewContainerRef: this.viewContainerRef,
     };
 
     // Create the overlay instance
     this.overlay.set(createOverlay(config));
+  }
+
+  /**
+   * Set the tooltip id.
+   */
+  setTooltipId(id: string): void {
+    this.tooltipId.set(id);
   }
 }
